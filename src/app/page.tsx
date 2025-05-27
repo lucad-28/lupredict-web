@@ -1,103 +1,173 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { fetchVerifyMail } from "@/fetchers/email";
+
+export default function WordCountVelocimeter() {
+  const [text, setText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [result, setResult] = useState<"Spam" | "Ham">();
+  const [isIncreasing, setIsIncreasing] = useState(false);
+  const [probability, setProbability] = useState(0);
+
+  const handleVerify = async () => {
+    setProbability(0);
+    setResult(undefined);
+    setIsLoading(true);
+    try {
+      const { result, proba } = await fetchVerifyMail(text);
+      console.log(result, proba);
+      setResult(result);
+      setProbability(proba);
+      setIsLoading(false);
+      setIsIncreasing(true);
+      setTimeout(() => {
+        setIsIncreasing(false);
+      }, 300);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setRotation(Math.min(probability * 180, 180));
+  }, [probability]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="max-w-full flex flex-col h-lvh md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto p-6 space-y-8">
+      <h1 className="mb-4 text-3xl text-center font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
+        <span className="text-transparent bg-clip-text bg-gradient-to-r to-gray-900 from-blue-950">
+          Span
+        </span>{" "}
+        or{" "}
+        <span className="text-transparent bg-clip-text bg-gradient-to-r to-blue-950 from-gray-900">
+          Ham
+        </span>{" "}
+      </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+      <div className="w-full my-auto flex  items-center justify-center">
+        <div className="flex flex-col md:flex-row gap-8 w-full">
+          <div className="space-y-3 md:w-[70%] w-full rounded-lg bg-gray-100/20 p-4 shadow-lg">
+            <label htmlFor="text-input" className="text-sm font-medium">
+              Enter your email below:
+            </label>
+            <Textarea
+              id="text-input"
+              placeholder="Start typing or paste your email here..."
+              className={`min-h-[300px] max-h-[80%] mt-1 text-base break-words bg-white ${
+                isLoading && "animate-pulse bg-gray-200"
+              }`}
+              value={text}
+              disabled={isLoading}
+              onChange={(e) => setText(e.target.value)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div className="w-full flex items-center justify-center mt-4">
+              <Button
+                className={`w-full max-w-[70%] md:max-w-[50%] ${
+                  isLoading && "animate-pulse bg-gray-200 text-gray-700"
+                }`}
+                onClick={handleVerify}
+                disabled={isLoading}
+              >
+                Verify
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center md:w-[30%] w-full">
+            <div className="relative w-64 h-40 overflow-hidden">
+              {/* Gauge background */}
+              <svg viewBox="0 0 200 100" className="w-full">
+                <defs>
+                  <linearGradient
+                    id="strokeGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stopColor="#161a27" />
+                    <stop offset="100%" stopColor="#13214c" />
+                  </linearGradient>
+                </defs>
+
+                <path
+                  d="M20,100 A80,80 0 0,1 180,100"
+                  fill="none"
+                  stroke="#e2e8f0"
+                  strokeWidth="20"
+                  strokeLinecap="round"
+                />
+                <foreignObject
+                  x="0"
+                  y="0"
+                  width="100%"
+                  height={"100%"}
+                  className="pointer-events-none"
+                >
+                  <div className="absolute inset-0 flex items-end justify-center pb-3">
+                    <span className="text-3xl font-bold italic">
+                      {result ? (result === "Spam" ? "Spam" : "Ham") : "?"}
+                    </span>
+                  </div>
+                </foreignObject>
+
+                {/* Gauge fill */}
+                <path
+                  d="M20,100 A80,80 0 0,1 180,100"
+                  fill="none"
+                  stroke="url(#strokeGradient)"
+                  strokeWidth="20"
+                  strokeLinecap="round"
+                  strokeDasharray="251.2"
+                  className={`transition-all duration-500 ease-out ${
+                    isLoading && "animate-pulse bg-gray-200"
+                  }`}
+                  strokeDashoffset={251.2 - (rotation / 180) * 251.2}
+                />
+
+                {/* Gauge needle */}
+                <line
+                  x1="100"
+                  y1="100"
+                  x2="100"
+                  y2="40"
+                  stroke="#1e293b"
+                  strokeWidth="2"
+                  transform={`rotate(${rotation - 90}, 100, 100)`}
+                  className="transition-all duration-500 ease-out"
+                />
+
+                {/* Needle center */}
+                <circle cx="100" cy="100" r="5" fill="#1e293b" />
+              </svg>
+
+              {/* Min and max labels */}
+              <div className="absolute bottom-2 left-5 text-sm font-medium">
+                0%
+              </div>
+              <div className="absolute bottom-2 right-2 text-sm font-medium">
+                100%
+              </div>
+            </div>
+
+            <div className="mt text-center">
+              <div
+                className={`text-5xl font-bold transition-all ${
+                  isIncreasing ? "scale-110 text-blue-950" : ""
+                }`}
+              >
+                {Math.round(probability * 10000) / 100}%
+              </div>
+              <div className="text-sm text-gray-500 mt-1">Certeza</div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
