@@ -41,7 +41,7 @@ export default function WordCountVelocimeter() {
     <div className="max-w-full flex flex-col h-lvh md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto p-6 space-y-8">
       <h1 className="mb-4 text-3xl text-center font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl">
         <span className="text-transparent bg-clip-text bg-gradient-to-r to-gray-900 from-blue-950">
-          Span
+          Spam
         </span>{" "}
         or{" "}
         <span className="text-transparent bg-clip-text bg-gradient-to-r to-blue-950 from-gray-900">
